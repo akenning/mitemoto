@@ -166,6 +166,15 @@ textarea {
 #screenEdit .bar {
   padding: 24px 14px 20px;
   justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bar-sub {
+  font-size: 11px;
+  color: var(--ink-mute);
+  letter-spacing: 0.1em;
+  text-align: center;
 }
 
 .play-btn {
