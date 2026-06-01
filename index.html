@@ -1,0 +1,77 @@
+<!doctype html>
+
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ミテモト</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📝</text></svg>">
+    <link rel="stylesheet" href="css/reset.css" />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+
+  <body>
+    <!-- 編集画面 -->
+    <section class="screen" id="screenEdit">
+      <header class="bar">
+        <h1>ミテモト</h1>
+        <button class="play-btn" id="startPlay">本番</button>
+      </header>
+
+      <div class="edit-body">
+        <div class="field">
+          <label class="field-label">タイトル</label>
+          <input type="text" id="speechTitle" placeholder="スピーチのタイトル">
+        </div>
+
+        <div class="hint">
+          カードを1分・1枚ずつ。キーワードは１カード<b>3つまで</b>
+        </div>
+
+        <div class="card-list" id="cardList"></div>
+
+        <button class="add-card" id="addCard">＋ カードを追加</button>
+        <button class="reset-btn" id="resetSpeech">このスピーチを削除する</button>
+
+        <div class="bottom-info">
+          <span id="totalInfo">0枚 / 0分</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 本番画面 -->
+    <section class="screen hidden" id="screenPlay">
+      <header class="play-bar">
+        <div id="timer" class="timer">0:00</div>
+        <div class="progress">
+          <span class="prog-text"
+            ><b id="progCur">1</b> / <span id="progTotal">1</span></span
+          >
+          <div class="prog-bar">
+            <div class="prog-fill" id="progFill"></div>
+          </div>
+        </div>
+      </header>
+      <div class="play-area" id="playArea"></div>
+      <div class="play-nav">
+        <button id="prevCard">◀ 前へ</button>
+        <button class="exit-btn" id="exitPlay">終了</button>
+        <button id="nextCard">次へ ▶</button>
+      </div>
+    </section>
+
+    <!-- 確認ダイアログ -->
+    <div class="modal-overlay hidden" id="modalOverlay">
+      <div class="modal">
+        <p class="modal-msg" id="modalMsg"></p>
+        <div class="modal-actions">
+          <button class="modal-cancel" id="modalCancel">キャンセル</button>
+          <button class="modal-ok" id="modalOk">削除する</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>

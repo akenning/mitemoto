@@ -1,0 +1,585 @@
+/* ============================================
+   ミテモト - スピーチカンペアプリ
+   ============================================ */
+
+:root {
+  --paper: #f5f1e8;
+  --paper-deep: #ebe4d3;
+  --ink: #1c1a17;
+  --ink-soft: #4a453d;
+  --ink-mute: #8a8275;
+  --line: #d4cab3;
+  --accent: #a52a2a;
+  --accent-soft: #c54545;
+  --white: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+body {
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-feature-settings: "palt";
+  -webkit-font-smoothing: antialiased;
+  /* iPhoneのセーフエリア対応 */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+button,
+input,
+textarea {
+  font-family: inherit;
+  color: inherit;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* 入力欄だけは選択可能に */
+input,
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
+  /* iOS Safariでフォーカス時に拡大されないよう16px以上 */
+  font-size: 16px;
+}
+
+/* ============================================
+   確認ダイアログ
+   ============================================ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(28, 26, 23, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.modal-overlay.hidden {
+  display: none;
+}
+.modal {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 28px 24px 20px;
+  width: min(300px, 88vw);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.modal-msg {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--ink);
+  text-align: center;
+  letter-spacing: 0.05em;
+}
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+.modal-cancel {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--ink-mute);
+  padding: 10px 20px;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.modal-ok {
+  background: var(--accent);
+  border: none;
+  color: var(--white);
+  padding: 10px 20px;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.modal-ok:active {
+  background: var(--accent-soft);
+}
+
+/* ============================================
+   画面の出し入れ(共通)
+   ============================================ */
+.screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+}
+
+.screen.hidden {
+  display: none;
+}
+
+.bar {
+  flex-shrink: 0;
+  padding: 18px 20px 16px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bar h1 {
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  color: var(--ink);
+  text-align: center;
+}
+
+.bar .sub {
+  font-size: 12px;
+  color: var(--ink-mute);
+  letter-spacing: 0.1em;
+}
+
+
+/* ============================================
+   画面2: 編集
+   ============================================ */
+#screenEdit .bar {
+  padding: 24px 14px 20px;
+  justify-content: center;
+}
+
+.play-btn {
+  position: fixed;
+  bottom: 28px;
+  right: 24px;
+  z-index: 10;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  background: var(--accent);
+  border: none;
+  color: var(--white);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.play-btn:disabled {
+  background: var(--ink-mute);
+  box-shadow: none;
+  cursor: default;
+  opacity: 0.5;
+}
+.play-btn:active {
+  background: var(--accent-soft);
+}
+
+.edit-body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px 14px 100px;
+}
+
+/* タイトル欄：背景色でカードと区別。アンダーラインなし・センタリング */
+#speechTitle {
+  background: var(--paper-deep);
+  border-bottom: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  text-align: center;
+}
+
+.hint {
+  text-align: center;
+  font-size: 12px;
+  color: var(--ink-mute);
+  letter-spacing: 0.05em;
+  padding: 8px 12px 20px;
+  line-height: 1.8;
+}
+
+.hint b {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.edit-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 3px;
+  padding: 16px;
+}
+.edit-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  border-bottom: 1px dashed var(--line);
+}
+.edit-card-num {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+  font-weight: 500;
+}
+.edit-card-actions {
+  display: flex;
+  gap: 2px;
+}
+.edit-card-actions button {
+  background: transparent;
+  border: none;
+  width: 32px;
+  height: 32px;
+  font-size: 16px;
+  color: var(--ink-mute);
+  cursor: pointer;
+  border-radius: 3px;
+}
+.edit-card-actions button:active {
+  background: var(--paper-deep);
+}
+.edit-card-actions .del:hover {
+  color: var(--accent);
+}
+
+.field {
+  margin-bottom: 12px;
+}
+.field:last-child {
+  margin-bottom: 0;
+}
+.field-label {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--ink-mute);
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+.field-label .small {
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  color: var(--ink-mute);
+  font-weight: 400;
+  margin-left: 6px;
+}
+.field textarea,
+.field input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  padding: 6px 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink);
+  resize: none;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.field textarea:focus,
+.field input:focus {
+  border-bottom-color: var(--accent);
+}
+.field textarea::placeholder,
+.field input::placeholder {
+  color: #c4bda8;
+  font-style: italic;
+}
+
+/* キーワード入力 */
+.kw-zone {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  padding: 4px 0;
+}
+.kw-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--paper-deep);
+  border: 1px solid var(--line);
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 13px;
+}
+.kw-chip .x {
+  cursor: pointer;
+  color: var(--ink-mute);
+  font-size: 14px;
+  line-height: 1;
+}
+.kw-input {
+  flex: 1;
+  min-width: 80px;
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  padding: 4px 0;
+}
+.kw-counter {
+  font-size: 10px;
+  color: var(--ink-mute);
+  margin-left: auto;
+  letter-spacing: 0.05em;
+}
+.kw-counter.full {
+  color: var(--accent);
+}
+
+.add-card {
+  width: 100%;
+  margin-top: 14px;
+  padding: 14px;
+  background: transparent;
+  border: 1px dashed var(--line);
+  color: var(--ink-mute);
+  font-size: 13px;
+  letter-spacing: 0.15em;
+  cursor: pointer;
+  border-radius: 3px;
+}
+.add-card:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.reset-btn {
+  display: block;
+  margin: 16px auto 0;
+  background: none;
+  border: none;
+  font-size: 12px;
+  color: var(--ink-mute);
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.reset-btn:active {
+  color: var(--accent);
+}
+
+.bottom-info {
+  position: fixed;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--white);
+  border: 1px solid var(--line);
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-size: 12px;
+  color: var(--ink-soft);
+  letter-spacing: 0.1em;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* ============================================
+   画面3: 本番
+   ============================================ */
+#screenPlay {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.play-bar {
+  flex-shrink: 0;
+  height: 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 4px;
+  padding: 50px 15px 16px;
+  border-bottom: 1px solid rgba(245, 241, 232, 0.1);
+}
+
+.timer {
+  text-align: center;
+  font-size: 42px;
+  letter-spacing: 0.05em;
+  color: rgba(245, 241, 232, 0.85);
+  font-variant-numeric: tabular-nums;
+}
+
+.play-nav .exit-btn {
+  background: transparent;
+  border: 1px solid rgba(245, 241, 232, 0.2);
+  color: rgba(245, 241, 232, 0.6);
+  font-size: 12px;
+  padding: 10px 16px;
+}
+
+.progress {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.prog-text {
+  font-size: 14px;
+  color: var(--paper);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  letter-spacing: 0.15em;
+}
+
+.prog-text b {
+  color: var(--paper);
+  font-weight: 500;
+  font-size: 18px;
+}
+
+.prog-bar {
+  flex: 1;
+  height: 4px;
+  background: rgba(245, 241, 232, 0.15);
+  overflow: hidden;
+  border-radius: 2px;
+}
+
+.prog-fill {
+  height: 100%;
+  background: var(--accent-soft);
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.play-area {
+  flex: 1;
+  position: relative;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.play-card {
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+}
+
+.play-trigger-label {
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  color: var(--accent-soft);
+  margin-bottom: 6px;
+}
+
+.play-trigger {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--paper);
+  padding-bottom: 10px;
+  font-style: italic;
+}
+
+.play-outline {
+  font-size: clamp(20px, 5.5vw, 28px);
+  line-height: 1.55;
+  color: rgba(245, 241, 232, 0.55);
+  letter-spacing: 0.02em;
+  margin-bottom: auto;
+  padding-bottom: 24px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  text-align: center;
+}
+
+.play-keywords {
+  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* きっかけとキーワードの間の仕切り線（半幅・中央） */
+.play-keywords::before {
+  content: "";
+  display: block;
+  width: 50%;
+  height: 1px;
+  background: rgba(245, 241, 232, 0.2);
+  margin: 0 auto 10px;
+}
+
+.play-kw {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding: 6px 0;
+}
+
+.play-kw-num {
+  color: var(--accent-soft);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.play-kw-text {
+  font-size: clamp(18px, 4.5vw, 22px);
+  color: var(--paper);
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+}
+
+.play-nav {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-top: 1px solid rgba(245, 241, 232, 0.1);
+}
+
+.play-nav button {
+  background: transparent;
+  border: 1px solid rgba(245, 241, 232, 0.3);
+  color: var(--paper);
+  padding: 10px 28px;
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.play-nav button:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
