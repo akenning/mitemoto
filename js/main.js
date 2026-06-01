@@ -7,7 +7,7 @@ $(function () {
   const STORAGE_KEY = "mitemoto";
   const MAX_KEYWORDS = 3;
 
-  // スピーチ全体のデータ。localStorageには以下の構造で保存される:
+  // スピーチ全体のデータ。localStorageには以下の構造で保存される
   //   キー: "mitemoto"
   //   値:   { title: "タイトル", cards: [ { outline, trigger, keywords[] }, ... ] }
   //
